@@ -7,3 +7,34 @@
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+<button @onclick="Test">Throw</button>
+<span>Use cancel</span>
+<input type="checkbox" checked="@throwCancelled" @onclick="() => throwCancelled = !throwCancelled" />
+
+@code {
+    private CancellationTokenSource cancellationTokenSource = new();
+    private bool throwCancelled = true;
+
+    private async Task Test()
+    {
+        try
+        {
+            if (throwCancelled)
+            {
+                cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                cancellationTokenSource.CancelAfter(1000);
+                await Task.Delay(5000, cancellationTokenSource.Token);
+            }
+            else
+            {
+                throw new ApplicationException("Test exception");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.GetType().Name);
+            throw;
+        }
+    }
+}
